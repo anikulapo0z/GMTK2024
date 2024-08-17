@@ -5,58 +5,82 @@ using UnityEngine;
 public class CreationGun : MonoBehaviour
 {
     public GameObject firePoint;
-    
+
     public GameObject Fire;
     public GameObject Water;
     public GameObject Earth;
     public ParticleSystem Air;
 
-    public float fireRate = 0.5f;
-    public float projectileSpeed = 10f; 
+    private GameObject selectedProjectile;
+
+    public float fireRate = 0.25f;
+    public float projectileSpeed = 20f;
     public float projectileLife = 5f;
 
-    public void FixedUpdate()
+    public void Start()
     {
+        selectedProjectile = Fire;
         StartCoroutine(Shoot());
     }
 
-    public IEnumerator Shoot()
+    private void Update()
+    {
+        HandleInput();
+        if (Input.GetMouseButtonDown(0))
+        {
+            StartCoroutine(Shoot());
+        }
+    }
+
+    private void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            selectedProjectile = Fire;
+            Debug.Log("Fire Selected");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            selectedProjectile = Water;
+            Debug.Log("Water Selected");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            selectedProjectile = Earth;
+            Debug.Log("Earth Selected");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            Air.Play(); // Different handling for Air as it's a ParticleSystem
+            Debug.Log("Air Selected");
+        }
+    }
+
+    private IEnumerator Shoot()
     {
         while (true)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (Input.GetMouseButtonDown(0)) // Left mouse click to shoot
             {
-                ShootProjectile(Fire);
-                Debug.Log("Fire Selected");
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                ShootProjectile(Water);
-                Debug.Log("Water Selected");
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                ShootProjectile(Earth);
-                Debug.Log("Earth Selected");
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha4))
-            {
-                Air.Play();
-                Debug.Log("Air Selected");
+                ShootProjectile(selectedProjectile);
+                Debug.Log("Shooting");  
             }
             yield return new WaitForSeconds(fireRate);
         }
     }
 
-    void ShootProjectile(GameObject projectile)
+    private void ShootProjectile(GameObject projectile)
     {
-        GameObject proj = Instantiate(projectile, firePoint.transform.position, Quaternion.identity);
-        Rigidbody rb = proj.GetComponent<Rigidbody>();
-
-        if (rb != null)
+        if (projectile != null)
         {
-            rb.velocity = transform.forward * projectileSpeed; // Set the velocity
+            GameObject proj = Instantiate(projectile, firePoint.transform.position, Quaternion.identity);
+            Rigidbody rb = proj.GetComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                rb.velocity = transform.forward * projectileSpeed;
+            }
+            Destroy(proj, projectileLife);
         }
-        Destroy(proj, lifeTime); // Destroy the projectile after 'lifeTime' seconds
     }
 }
